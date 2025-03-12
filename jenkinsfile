@@ -1,0 +1,60 @@
+pipeline {
+    agent {
+        docker {
+            image 'python:3.9' // Use an appropriate Python Docker image
+        }
+    }
+    
+    environment {
+        FLASK_ENV = 'development' // Set Flask environment
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from the specified branch
+                git branch: 'main', url: 'https://github.com/sammyjel/pywebappcicd.git'
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                // Install Python dependencies
+                sh 'pip install -r requirements.txt'
+            }
+        }
+        stage('Build') {
+            steps {
+                // Here you can add any build commands if necessary
+                sh 'echo "Building the application..."'
+            }
+        }
+        stage('Run Application') {
+            steps {
+                // Run the Flask application in the foreground
+                sh 'python app.py &'
+            }
+        }
+        stage('Test') {
+            steps {
+                // Wait for the application to start
+                sh 'sleep 10'
+                // Run your tests using pytest or unittest
+                sh 'pytest' // or 'python -m unittest discover'
+            }
+        }
+    }
+    post {
+        always {
+            // Stop the Flask application
+            sh 'pkill -f "python app.py" || true'
+        }
+        success {
+            // Actions to take on successful build
+            echo 'Build and tests completed successfully!'
+        }
+        failure {
+            // Actions to take on build failure
+            echo 'Rebuild or tests failed.'
+        }
+    }
+}
