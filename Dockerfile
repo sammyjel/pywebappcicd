@@ -1,16 +1,20 @@
-FROM python:3.12
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    python3-apt \
-    python3-debian \
-    libdbus-1-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
-
+# Set the working directory in the container
 WORKDIR /app
 
-COPY requirements.txt .
+# Copy the current directory contents into the container at /app
+COPY . /app
 
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Install any needed dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Make port 5000 available to the world outside this container
+EXPOSE 5000
+
+# Define environment variable to run app in production mode
+ENV FLASK_ENV=development
+
+# Run app.py when the container launches
+CMD ["python", "app.py"]
